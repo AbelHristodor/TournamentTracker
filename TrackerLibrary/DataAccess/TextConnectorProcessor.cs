@@ -64,6 +64,32 @@ namespace TrackerLibrary.DataAccess.TextHelpers
         }
 
         /// <summary>
+        /// Converts a list of lines to PeopleModels
+        /// </summary>
+        /// <param name="lines">List of lines</param>
+        /// <returns>List of PeopleModels</returns>
+        public static List<PersonModel> ConvertToPersonModels(this List<string> lines)
+        {
+            List<PersonModel> output = new List<PersonModel>();
+
+            foreach (string line in lines)
+            {
+                string[] cols = line.Split(',');
+
+                PersonModel p = new PersonModel {
+                    Id = int.Parse(cols[0]),
+                    FirstName = cols[1],
+                    LastName = cols[2],
+                    EmailAddress = cols[3],
+                    CellphoneNumber = cols[4]
+                };
+
+                output.Add(p);
+            }
+            return output;
+        }
+
+        /// <summary>
         /// Saves PrizeModels to a text file.
         /// </summary>
         /// <param name="models">List of PrizeModels to save</param>
@@ -75,6 +101,23 @@ namespace TrackerLibrary.DataAccess.TextHelpers
             foreach (PrizeModel p in models)
             {
                 lines.Add($"{ p.Id },{ p.PlaceNumber },{ p.PlaceName },{ p.PrizeAmount },{ p.PrizePercentage }");
+            }
+
+            File.WriteAllLines(fileName.FullFilePath(), lines);
+        }
+
+        /// <summary>
+        /// Saves PersonModels to a text file.
+        /// </summary>
+        /// <param name="models">List of PersonModel to save</param>
+        /// <param name="fileName">Name of the file</param>
+        public static void SaveToPeopleFile(this List<PersonModel> models, string fileName)
+        {
+            List<string> lines = new List<string>();
+
+            foreach (PersonModel p in models)
+            {
+                lines.Add($"{ p.Id },{ p.FirstName },{ p.LastName },{ p.EmailAddress },{ p.CellphoneNumber }");
             }
 
             File.WriteAllLines(fileName.FullFilePath(), lines);
