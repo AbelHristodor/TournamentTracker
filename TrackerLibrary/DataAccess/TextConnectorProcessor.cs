@@ -28,7 +28,7 @@ namespace TrackerLibrary.DataAccess.TextHelpers
         /// <returns>A list with the contents of the file</returns>
         public static List<string> LoadFile(this string file)
         {
-            if(!File.Exists(file))
+            if (!File.Exists(file))
             {
                 return new List<string>();
             }
@@ -44,8 +44,8 @@ namespace TrackerLibrary.DataAccess.TextHelpers
         public static List<PrizeModel> ConvertToPrizeModels(this List<string> lines)
         {
             List<PrizeModel> output = new List<PrizeModel>();
-            
-            foreach(string line in lines)
+
+            foreach (string line in lines)
             {
                 string[] cols = line.Split(',');
 
@@ -90,6 +90,40 @@ namespace TrackerLibrary.DataAccess.TextHelpers
         }
 
         /// <summary>
+        /// Converts a list of lines to TeamModels
+        /// </summary>
+        /// <param name="lines">List of lines</param>
+        /// <param name="peopleFileName">Name of the people file</param>
+        /// <returns>List of TeamModels</returns>
+        public static List<TeamModel> ConvertToTeamModels(this List<string> lines, string peopleFileName)
+        {
+            // id, teamName,list of ids separated by the pipe (people's ids)
+            // 3,Tim's Team,1|3|5
+            List<TeamModel> output = new List<TeamModel>();
+            List<PersonModel> people = peopleFileName.FullFilePath().LoadFile().ConvertToPersonModels();
+
+
+            foreach (string line in lines)
+            {
+                string[] cols = line.Split(',');
+                TeamModel t = new TeamModel
+                {
+                    Id = int.Parse(cols[0]),
+                    TeamName = cols[1]
+                };
+
+                string[] personIds = cols[2].Split('|');
+                foreach (string id in personIds)
+                {
+                    t.TeamMembers.Add(people.Where(x => x.Id == int.Parse(id)).First());
+                }
+
+                output.Add(t);
+            }
+            return output;
+        }
+
+        /// <summary>
         /// Saves PrizeModels to a text file.
         /// </summary>
         /// <param name="models">List of PrizeModels to save</param>
@@ -121,6 +155,43 @@ namespace TrackerLibrary.DataAccess.TextHelpers
             }
 
             File.WriteAllLines(fileName.FullFilePath(), lines);
+        }
+
+        /// <summary>
+        /// Save TeamModels to a text file.
+        /// </summary>
+        /// <param name="models">List of TeamModels</param>
+        /// <param name="fileName">Name of the file</param>
+        public static void SaveToTeamFile(this List<TeamModel> models, string fileName)
+        {
+            List<string> lines = new List<string>();
+
+            foreach (TeamModel team in models)
+            {
+                lines.Add($"{team.Id},{team.TeamName},{ConvertPeopleListToString(team.TeamMembers)}");
+            }
+
+            File.WriteAllLines(fileName.FullFilePath(), lines);
+        }
+
+        /// <summary>
+        /// Converts a list of People to string using this format: {id_1}|{id_2}|...
+        /// </summary>
+        /// <param name="people">List of PersonModels</param>
+        /// <returns>String containing Ids separated by "|"</returns>
+        private static string ConvertPeopleListToString(List<PersonModel> people)
+        {
+            string output = "";
+
+            if (people.Count == 0) { return ""; }
+
+            foreach (PersonModel p in people)
+            {
+                output += $"{p.Id}|";
+            }
+
+            output = output.Substring(0, output.Length - 1);
+            return output;
         }
     }
 }
