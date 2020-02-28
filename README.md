@@ -12,3 +12,7 @@ It's meant to help you track rounds, games and prizes during a tournament.
 - SQL DB design using Microsoft Sql Server Management Studio 18
 - SQL procedures
 - Windows Forms
+
+
+-> For learning purposes
+--> Course & Project not finished
